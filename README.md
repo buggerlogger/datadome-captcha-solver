@@ -11,7 +11,7 @@ It fetches `c.js`, the challenge document and its assets the way a browser would
 ## Install
 
 ```sh
-npm install github:buggerlogger/dd-403-solver-lib
+npm install github:buggerlogger/datadome-captcha-solver
 ```
 
 ## Use
@@ -31,8 +31,57 @@ result.queryString; // the full /captcha/check query
 result.ok;          // a cookie came back
 ```
 
-You get the captcha URL from the 403 the protected site served you: its body carries
-`var dd = {cid, hsh, t, s, e, ...}`, and the iframe URL is built from those.
+### Getting the captcha URL
+
+The URL comes from the 403 the protected site served you — its body carries
+`var dd = {cid, hsh, t, s, e, ...}` and the iframe URL is built from those. `tools/fetch.mjs` does
+that for you:
+
+```sh
+node tools/fetch.mjs https://site.example/login
+```
+
+```
+transport      uTLS chrome_win10 via fetch.exe  proxy=direct
+  status        403  x-dd-b=1
+  challenge     t=fe  (slider captcha)
+
+captcha url (pass this to solveCaptcha):
+
+https://geo.captcha-delivery.com/captcha/?initialCid=...&t=fe&...
+```
+
+Add `--json` for a machine-readable object; `challengeFor(pageUrl)` is exported for the same thing.
+It exits non-zero and tells you when the page is not a captcha this solver handles:
+
+```
+  status        403  x-dd-b=2
+  challenge     t=bv  (behaviour interstitial)
+```
+
+`solveCaptcha` makes the same check on the URL you hand it and refuses anything that is not `t=fe`.
+
+The `cid`, `e` and `initialCid` in that URL are one-shot, but they are spent by `/captcha/check`,
+not by fetching the document — you can look at the challenge without burning it.
+
+### Which challenge you get is decided by TLS, not by this library
+
+DataDome picks the challenge class from the **TLS ClientHello**, before a byte of JavaScript runs,
+and stamps its choice into `dd.t`. Node's own TLS is answered with `t=bv`, the interstitial this
+solver does not handle; a real Chrome ClientHello is answered with `t=fe`.
+
+That decision is made at the protected origin. `geo.captcha-delivery.com` does not repeat it, so
+**the library itself needs no special transport** — it solves a `t=fe` URL over plain Node TLS.
+Only the two requests you make yourself need a Chrome fingerprint:
+
+| step | who does it | transport |
+| --- | --- | --- |
+| provoke the 403, read `dd` | you | Chrome ClientHello |
+| solve the captcha | this library | anything |
+| replay `datadome=<cookie>` | you | Chrome ClientHello |
+
+Nothing is bundled for that. Point `DD_GO` at a uTLS fetch binary or set `PROXY`, and both
+`tools/fetch.mjs` and the library will use it; `TLS=node` forces Node's stack back on.
 
 ### Options
 
