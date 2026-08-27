@@ -96,7 +96,7 @@ await solveCaptcha(captchaUrl, {
 ### Build a payload without sending anything
 
 ```js
-import { buildPayload } from 'dd-403-solver';
+import { buildPayload } from 'datadome-captcha-solver';
 const { queryString, payload, plv3, checkUrl } = await buildPayload(html, captchaUrl);
 ```
 

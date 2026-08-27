@@ -1,0 +1,25 @@
+node_modules/
+*.log
+
+# ── SOLVE ARTIFACTS — NEVER COMMIT ────────────────────────────────────────────
+# Anything the solver writes contains LIVE session material: challenge documents
+# with one-shot cid/e, minted datadome cookies, decoded payloads, and captured
+# canvas frames. Keep all of it out of the repo.
+out/
+run/
+*_challenge.html
+*_page.html
+*_final.html
+*_query.txt
+*_check.json
+*_payload.json
+*_decoded.json
+*_canvas_feed.json
+*_hashpre.json
+
+# extractor output — aggregates, but generated locally from your own corpus
+fp-profiles.json
+tools/_*.json
+
+# uTLS transport binary — not shipped. Whoever provokes the 403 supplies it (DD_GO/PROXY).
+bin/
