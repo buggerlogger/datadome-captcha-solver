@@ -64,25 +64,6 @@ It exits non-zero and tells you when the page is not a captcha this solver handl
 The `cid`, `e` and `initialCid` in that URL are one-shot, but they are spent by `/captcha/check`,
 not by fetching the document — you can look at the challenge without burning it.
 
-### Which challenge you get is decided by TLS, not by this library
-
-DataDome picks the challenge class from the **TLS ClientHello**, before a byte of JavaScript runs,
-and stamps its choice into `dd.t`. Node's own TLS is answered with `t=bv`, the interstitial this
-solver does not handle; a real Chrome ClientHello is answered with `t=fe`.
-
-That decision is made at the protected origin. `geo.captcha-delivery.com` does not repeat it, so
-**the library itself needs no special transport** — it solves a `t=fe` URL over plain Node TLS.
-Only the two requests you make yourself need a Chrome fingerprint:
-
-| step | who does it | transport |
-| --- | --- | --- |
-| provoke the 403, read `dd` | you | Chrome ClientHello |
-| solve the captcha | this library | anything |
-| replay `datadome=<cookie>` | you | Chrome ClientHello |
-
-Nothing is bundled for that. Point `DD_GO` at a uTLS fetch binary or set `PROXY`, and both
-`tools/fetch.mjs` and the library will use it; `TLS=node` forces Node's stack back on.
-
 ### Options
 
 ```js
