@@ -17,7 +17,7 @@ npm install github:buggerlogger/datadome-captcha-solver
 ## Use
 
 ```js
-import { solveCaptcha } from 'dd-403-solver';
+import { solveCaptcha } from 'datadome-captcha-solver';
 
 const result = await solveCaptcha(
   'https://geo.captcha-delivery.com/captcha/?initialCid=...&hash=...&cid=...&t=fe&s=...&e=...&dm=cd'
